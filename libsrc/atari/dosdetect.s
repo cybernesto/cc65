@@ -5,13 +5,13 @@
 ;
 
         .include        "atari.inc"
-        .constructor    detect,26
+        .constructor    detect, 26
         .export         __dos_type
 
 ; ------------------------------------------------------------------------
 ; DOS type detection
 
-.segment        "INIT"
+.segment        "ONCE"
 
 detect: lda     DOS
         cmp     #'S'            ; SpartaDOS

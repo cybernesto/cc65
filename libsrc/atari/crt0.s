@@ -14,7 +14,7 @@
         .import         initlib, donelib
         .import         callmain, zerobss
         .import         __RESERVED_MEMORY__
-        .import         __RAM_START__, __RAM_SIZE__
+        .import         __MAIN_START__, __MAIN_SIZE__
 .ifdef __ATARIXL__
         .import         __STACKSIZE__
         .import         sram_init
@@ -32,8 +32,8 @@
 .segment        "STARTUP"
 
         rts     ; fix for SpartaDOS / OS/A+
-                ; they first call the entry point from AUTOSTRT and
-                ; then the load addess (this rts here).
+                ; They first call the entry point from AUTOSTRT; and
+                ; then, the load address (this rts here).
                 ; We point AUTOSTRT directly after the rts.
 
 ; Real entry point:
@@ -44,94 +44,94 @@ start:
         jsr     sram_init
 .endif
 
-; Clear the BSS data
+; Clear the BSS data.
 
         jsr     zerobss
 
-; Setup the stack
+; Set up the stack.
 
         tsx
         stx     SP_save
 
 .ifdef __ATARIXL__
 
-        lda     #<(__RAM_START__ + __RAM_SIZE__ + __STACKSIZE__)
+        lda     #<(__MAIN_START__ + __MAIN_SIZE__ + __STACKSIZE__)
+        ldx     #>(__MAIN_START__ + __MAIN_SIZE__ + __STACKSIZE__)
         sta     sp
-        lda     #>(__RAM_START__ + __RAM_SIZE__ + __STACKSIZE__)
-        sta     sp+1
+        stx     sp+1
 
 .else
 
-; Report memory usage
+; Report the memory usage.
 
         lda     APPMHI
+        ldx     APPMHI+1
         sta     APPMHI_save             ; remember old APPMHI value
-        lda     APPMHI+1
-        sta     APPMHI_save+1
+        stx     APPMHI_save+1
 
         sec
         lda     MEMTOP
         sbc     #<__RESERVED_MEMORY__
         sta     APPMHI                  ; initialize our APPMHI value
-        sta     sp                      ; setup runtime stack part 1
+        sta     sp                      ; set up runtime stack part 1
         lda     MEMTOP+1
         sbc     #>__RESERVED_MEMORY__
         sta     APPMHI+1
-        sta     sp+1                    ; setup runtime stack part 2
+        sta     sp+1                    ; set up runtime stack part 2
 
 .endif
 
-; Call module constructors
+; Call the module constructors.
 
         jsr     initlib
 
-; Set left margin to 0
+; Set the left margin to 0.
 
         lda     LMARGN
         sta     LMARGN_save
         ldy     #0
         sty     LMARGN
 
-; Set keyb to upper/lowercase mode
+; Set the keyboard to upper-/lower-case mode.
 
         ldx     SHFLOK
         stx     SHFLOK_save
         sty     SHFLOK
 
-; Initialize conio stuff
+; Initialize the conio stuff.
 
         dey                     ; Set Y to $FF
         sty     CH              ; remove keypress which might be in the input buffer
 
-; Push arguments and call main
+; Push the command-line arguments; and, call main().
 
         jsr     callmain
 
-; Call module destructors. This is also the _exit entry.
+; Call the module destructors. This is also the exit() entry.
 
 _exit:  jsr     donelib         ; Run module destructors
 
-; Restore system stuff
+; Restore the system stuff.
 
         ldx     SP_save
         txs                     ; Restore stack pointer
 
-; Restore left margin
+; Restore the left margin.
 
         lda     LMARGN_save
         sta     LMARGN
 
-; Restore kb mode
+; Restore the kb mode.
 
         lda     SHFLOK_save
         sta     SHFLOK
 
-; Restore APPMHI
+; Restore APPMHI.
 
         lda     APPMHI_save
+        ldx     APPMHI_save+1
         sta     APPMHI
-        lda     APPMHI_save+1
-        sta     APPMHI+1
+        stx     APPMHI+1
 
 .ifdef __ATARIXL__
 
@@ -142,13 +142,13 @@ _exit:  jsr     donelib         ; Run module destructors
         lda     RAMTOP_save
         sta     RAMTOP
         lda     MEMTOP_save
+        ldx     MEMTOP_save+1
         sta     MEMTOP
-        lda     MEMTOP_save+1
-        sta     MEMTOP+1
+        stx     MEMTOP+1
 
 
-; Issue a GRAPHICS 0 call (copied'n'pasted from TGI drivers) in
-; order to restore screen memory to its defailt location just
+; Issue a GRAPHICS 0 call (copied'n'pasted from the TGI drivers), in
+; order to restore screen memory to its default location just
 ; before the ROM.
 
         jsr     findfreeiocb
@@ -169,7 +169,7 @@ _exit:  jsr     donelib         ; Run module destructors
         lda     #0
         sta     ICBLH,x
         jsr     CIOV_org
-; No error checking here, shouldn't happen(tm), and no way to
+; No error checking here, shouldn't happen(TM); and, no way to
 ; recover anyway.
 
         lda     #CLOSE
@@ -178,12 +178,12 @@ _exit:  jsr     donelib         ; Run module destructors
 
 .endif
 
-; Turn on cursor
+; Turn on the cursor.
 
         ldx     #0
         stx     CRSINH
 
-; Back to DOS
+; Back to DOS.
 
         rts
 

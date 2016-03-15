@@ -268,7 +268,9 @@ void EnterFunctionLevel (void)
     TagTab  = S;
 
     /* Create and assign a new label table */
-    LabelTab = NewSymTable (SYMTAB_SIZE_LABEL);
+    S = NewSymTable (SYMTAB_SIZE_LABEL);
+    S->PrevTab = LabelTab;
+    LabelTab = S;
 }
 
 
@@ -286,6 +288,7 @@ void RememberFunctionLevel (struct FuncDesc* F)
     /* Don't delete the tables */
     SymTab = SymTab->PrevTab;
     TagTab = TagTab->PrevTab;
+    LabelTab = LabelTab->PrevTab;
 }
 
 
@@ -808,6 +811,25 @@ SymEntry* AddGlobalSym (const char* Name, const Type* T, unsigned Flags)
                     SetFuncDesc (EType, F);
                 }
             }
+        }
+
+        /* If a static declaration follows a non-static declaration, then
+        ** warn about the conflict.  (It will compile a public declaration.)
+        */
+        if ((Flags & SC_EXTERN) == 0 && (Entry->Flags & SC_EXTERN) != 0) {
+            Warning ("static declaration follows non-static declaration of `%s'.", Name);
+        }
+
+        /* An extern declaration must not change the current linkage. */
+        if (IsFunc || (Flags & (SC_EXTERN | SC_DEF)) == SC_EXTERN) {
+            Flags &= ~SC_EXTERN;
+        }
+
+        /* If a public declaration follows a static declaration, then
+        ** warn about the conflict.  (It will compile a public declaration.)
+        */
+        if ((Flags & SC_EXTERN) != 0 && (Entry->Flags & SC_EXTERN) == 0) {
+            Warning ("public declaration follows static declaration of `%s'.", Name);
         }
 
         /* Add the new flags */

@@ -264,6 +264,10 @@ static void SetSys (const char* Sys)
             NewSymbol ("__APPLE2ENH__", 1);
             break;
 
+        case TGT_GAMATE:
+            NewSymbol ("__GAMATE__", 1);
+            break;
+
         case TGT_GEOS_CBM:
             /* Do not handle as a CBM system */
             NewSymbol ("__GEOS__", 1);
@@ -301,6 +305,14 @@ static void SetSys (const char* Sys)
 
         case TGT_SIM65C02:
             NewSymbol ("__SIM65C02__", 1);
+            break;
+
+        case TGT_OSIC1P:
+            NewSymbol ("__OSIC1P__", 1);
+            break;
+
+        case TGT_PCENGINE:
+            NewSymbol ("__PCE__", 1);
             break;
 
         default:

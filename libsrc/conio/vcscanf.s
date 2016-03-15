@@ -1,7 +1,7 @@
 ;
 ; int fastcall vcscanf(const char* format, va_list ap);
 ;
-; 2005-01-02, Greg King
+; 2014-09-10, Greg King
 ;
 
         .export         _vcscanf
@@ -44,7 +44,7 @@ get:    ldx     pushed
 
 ; Return the old, pushed-back character (instead of getting a new one).
 ;
-        dex                     ; ldx #>0
+        dex                     ; ldx #>$0000
         stx     pushed
         lda     back
         rts
@@ -58,12 +58,12 @@ L1:     jsr     _cgetc
         pha
         jsr     _cputc
         pla
-        ldx     #>0
+        ldx     #>$0000
         rts
 
 
 ; ----------------------------------------------------------------------------
-; static int unget(int c) {
+; static int cdecl unget(int c) {
 ;     pushed = true;
 ;     return back = c;
 ;     }
@@ -127,4 +127,3 @@ d:      .addr   get             ; SCANFDATA::GET
         pla
         jmp     __scanf
         .endproc
-

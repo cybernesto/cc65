@@ -15,12 +15,12 @@ SPACE   = 32            ; SPACE char.
         .import         __argc, __argv
         .importzp       ptr1
         .import         __dos_type
-        .constructor    initmainargs,25
+        .constructor    initmainargs, 25
 
 ; --------------------------------------------------------------------------
 ; Get command line
 
-.segment        "INIT"
+.segment        "ONCE"
 
 initmainargs:
         lda     #0

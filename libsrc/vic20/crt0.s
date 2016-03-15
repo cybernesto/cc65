@@ -8,7 +8,7 @@
         .import         zerobss, push0
         .import         callmain
         .import         RESTOR, BSOUT, CLRCH
-        .import         __RAM_START__, __RAM_SIZE__     ; Linker generated
+        .import         __MAIN_START__, __MAIN_SIZE__   ; Linker generated
         .import         __STACKSIZE__                   ; Linker generated
         .importzp       ST
 
@@ -22,7 +22,7 @@
 
 Start:
 
-; Save the zero page locations we need
+; Save the zero-page locations that we need.
 
         ldx     #zpspace-1
 L1:     lda     sp,x
@@ -30,39 +30,39 @@ L1:     lda     sp,x
         dex
         bpl     L1
 
-; Switch to second charset
+; Switch to the second charset.
 
         lda     #14
         jsr     BSOUT
 
-; Clear the BSS data
+; Clear the BSS data.
 
         jsr     zerobss
 
-; Save system stuff and setup the stack
+; Save some system stuff; and, set up the stack.
 
         tsx
         stx     spsave          ; Save the system stack ptr
 
-        lda     #<(__RAM_START__ + __RAM_SIZE__ + __STACKSIZE__)
+        lda     #<(__MAIN_START__ + __MAIN_SIZE__ + __STACKSIZE__)
+        ldx     #>(__MAIN_START__ + __MAIN_SIZE__ + __STACKSIZE__)
         sta     sp
-        lda     #>(__RAM_START__ + __RAM_SIZE__ + __STACKSIZE__)
-        sta     sp+1            ; Set argument stack ptr
+        stx     sp+1            ; Set argument stack ptr
 
-; Call module constructors
+; Call the module constructors.
 
         jsr     initlib
 
-; Push arguments and call main()
+; Push the command-line arguments; and, call main().
 
         jsr     callmain
 
-; Back from main (This is also the _exit entry). Run module destructors
+; Back from main() [this is also the exit() entry]. Run the module destructors.
 
 _exit:  pha                     ; Save the return code on stack
         jsr     donelib
 
-; Copy back the zero page stuff
+; Copy back the zero-page stuff.
 
         ldx     #zpspace-1
 L2:     lda     zpsave,x
@@ -70,23 +70,23 @@ L2:     lda     zpsave,x
         dex
         bpl     L2
 
-; Place the program return code into ST
+; Place the program return code into BASIC's status variable.
 
         pla
         sta     ST
 
-; Restore the stack pointer
+; Restore the stack pointer.
 
         ldx     spsave
         txs
 
-; Back to basic
+; Back to BASIC.
 
         rts
 
 ; ------------------------------------------------------------------------
 
-.segment        "ZPSAVE"
+.segment        "INIT"
 
 zpsave: .res    zpspace
 
